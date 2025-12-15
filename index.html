@@ -2,23 +2,35 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Secret Msg</title>
+<title>Byers Secret Message</title>
 
 <style>
+/* ===== RED + BLACK STRANGER THINGS THEME ===== */
 body {
   margin: 0;
-  background: radial-gradient(circle, #140000 0%, #000 75%);
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at center, rgba(255,0,0,0.18), transparent 60%),
+    linear-gradient(#120000, #000);
   font-family: "Courier New", monospace;
-  color: white;
+  color: #ff4d4d;
   text-align: center;
 }
 
 h1 {
   margin-top: 20px;
-  color: #ff2d2d;
   letter-spacing: 6px;
+  color: #ff2d2d;
 }
 
+/* ===== MESSAGE TEXT ===== */
+#textMsg {
+  margin-top: 10px;
+  color: #ff8080;
+  font-size: 18px;
+}
+
+/* ===== INPUT ===== */
 .controls {
   margin-top: 20px;
 }
@@ -27,34 +39,37 @@ input {
   width: 260px;
   padding: 10px;
   font-size: 18px;
-  background: black;
+  background: #000;
   border: 2px solid #ff2d2d;
-  color: white;
+  color: #ff8080;
+  outline: none;
 }
 
 button {
   padding: 10px 16px;
   margin-left: 6px;
   background: #ff2d2d;
-  color: black;
+  color: #000;
   border: none;
   cursor: pointer;
 }
 
 button:hover {
-  background: #ff5c5c;
+  background: #ff6666;
 }
 
-.link-box {
+/* ===== LINK BOX ===== */
+#linkBox {
   margin-top: 15px;
-  color: #00ffcc;
+  color: #ff8080;
   font-size: 14px;
   word-break: break-all;
 }
 
+/* ===== WALL ===== */
 .wall {
   margin: 40px auto;
-  max-width: 650px;
+  max-width: 820px;
 }
 
 .row {
@@ -62,24 +77,31 @@ button:hover {
   justify-content: center;
 }
 
-.letter {
-  width: 42px;
-  height: 42px;
-  margin: 6px;
+/* ===== BULB ===== */
+.bulb {
+  width: 46px;
+  height: 46px;
+  margin: 8px;
   border-radius: 50%;
-  background: #220000;
-  color: #555;
+  background: #330000;
+  color: #000;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 20px;
+  font-size: 22px;
+  font-weight: bold;
+  filter: brightness(0.35);
+  transition: 0.25s;
 }
 
-.letter.on {
+/* ===== BULB ON ===== */
+.bulb.on {
   background: #ff2d2d;
-  color: white;
-  box-shadow: 0 0 20px #ff2d2d, 0 0 40px #ff2d2d;
-  transform: scale(1.15);
+  filter: brightness(1.5);
+  box-shadow:
+    0 0 20px #ff2d2d,
+    0 0 45px #ff2d2d;
+  transform: scale(1.2);
 }
 </style>
 </head>
@@ -87,75 +109,101 @@ button:hover {
 <body>
 
 <h1>SECRET MSG</h1>
+<div id="textMsg"></div>
 
 <div class="controls">
   <input id="msgInput" placeholder="TYPE MESSAGE (A–Z)">
   <button onclick="generateLink()">GENERATE LINK</button>
 </div>
 
-<div class="link-box" id="linkBox"></div>
+<div id="linkBox"></div>
 
 <div class="wall" id="wall"></div>
 
 <script>
-/* BUILD WALL */
-const rows = ["ABCDE","FGHIJ","KLMNO","PQRST","UVWXYZ"];
-const wall = document.getElementById("wall");
-const letters = {};
+/* ===== ALPHABET LAYOUT ===== */
+const rows = [
+  "ABCDEFGH",
+  "IJKLMNOPQ",
+  "RSTUVWXYZ"
+];
 
+const wall = document.getElementById("wall");
+const bulbs = {};
+
+/* ===== BUILD WALL ===== */
 rows.forEach(r => {
   const rowDiv = document.createElement("div");
   rowDiv.className = "row";
+
   r.split("").forEach(ch => {
     const d = document.createElement("div");
-    d.className = "letter";
+    d.className = "bulb";
     d.textContent = ch;
     rowDiv.appendChild(d);
-    letters[ch] = d;
+    bulbs[ch] = d;
   });
+
   wall.appendChild(rowDiv);
 });
 
-/* GENERATE FULL FILE LINK */
+/* ===== TYPE HIGHLIGHT ===== */
+document.getElementById("msgInput").addEventListener("input", e => {
+  Object.values(bulbs).forEach(b => b.classList.remove("on"));
+  const last = e.target.value.slice(-1).toUpperCase();
+  if (bulbs[last]) bulbs[last].classList.add("on");
+});
+
+/* ===== GENERATE LINK ===== */
 function generateLink() {
   let msg = document.getElementById("msgInput").value
     .toUpperCase()
-    .replace(/[^A-Z]/g, "");
+    .replace(/[^A-Z]/g,"");
 
-  if (!msg) {
-    alert("ENTER LETTERS A–Z ONLY");
-    return;
-  }
+  if (!msg) return alert("TYPE LETTERS A–Z ONLY");
 
-  // FULL absolute path + message
-  const fullLink = window.location.href.split("#")[0] + "#" + msg;
+  const link =
+    window.location.origin +
+    window.location.pathname +
+    "#" + msg;
 
-  document.getElementById("linkBox").innerText =
-    "Copy & open this link:\n" + fullLink;
+  document.getElementById("linkBox").innerHTML =
+    "Send this link:<br><a href='" + link + "' target='_blank'>" + link + "</a>";
+
+  navigator.clipboard.writeText(link);
 }
 
-/* READ MESSAGE FROM LINK */
-const receivedMsg = window.location.hash.substring(1)
+/* ===== READ MESSAGE FROM LINK ===== */
+const received = window.location.hash.substring(1)
   .toUpperCase()
-  .replace(/[^A-Z]/g, "");
+  .replace(/[^A-Z]/g,"");
 
-if (receivedMsg) {
-  blink(receivedMsg);
+if (received) {
+  document.getElementById("textMsg").innerText =
+    "MESSAGE RECEIVED: " + received;
+  blink(received);
 }
 
-/* BLINK LOGIC */
+/* ===== BLINK LOGIC (REPEATS CLEAR) ===== */
 function blink(message) {
   let i = 0;
+
   const interval = setInterval(() => {
-    Object.values(letters).forEach(l => l.classList.remove("on"));
-    if (letters[message[i]]) letters[message[i]].classList.add("on");
+    Object.values(bulbs).forEach(b => b.classList.remove("on"));
+
+    const ch = message[i];
+    if (bulbs[ch]) bulbs[ch].classList.add("on");
+
+    setTimeout(() => {
+      if (bulbs[ch]) bulbs[ch].classList.remove("on");
+    }, 350);
+
     i++;
-    if (i >= message.length) {
-      clearInterval(interval);
-    }
-  }, 900);
+    if (i >= message.length) clearInterval(interval);
+  }, 800);
 }
 </script>
 
 </body>
 </html>
+
