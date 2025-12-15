@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Secret Msg</title>
+
+<style>
+body {
+  margin: 0;
+  background: radial-gradient(circle, #140000 0%, #000 75%);
+  font-family: "Courier New", monospace;
+  color: white;
+  text-align: center;
+}
+
+h1 {
+  margin-top: 20px;
+  color: #ff2d2d;
+  letter-spacing: 6px;
+}
+
+.controls {
+  margin-top: 20px;
+}
+
+input {
+  width: 260px;
+  padding: 10px;
+  font-size: 18px;
+  background: black;
+  border: 2px solid #ff2d2d;
+  color: white;
+}
+
+button {
+  padding: 10px 16px;
+  margin-left: 6px;
+  background: #ff2d2d;
+  color: black;
+  border: none;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #ff5c5c;
+}
+
+.link-box {
+  margin-top: 15px;
+  color: #00ffcc;
+  font-size: 14px;
+  word-break: break-all;
+}
+
+.wall {
+  margin: 40px auto;
+  max-width: 650px;
+}
+
+.row {
+  display: flex;
+  justify-content: center;
+}
+
+.letter {
+  width: 42px;
+  height: 42px;
+  margin: 6px;
+  border-radius: 50%;
+  background: #220000;
+  color: #555;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+}
+
+.letter.on {
+  background: #ff2d2d;
+  color: white;
+  box-shadow: 0 0 20px #ff2d2d, 0 0 40px #ff2d2d;
+  transform: scale(1.15);
+}
+</style>
+</head>
+
+<body>
+
+<h1>SECRET MSG</h1>
+
+<div class="controls">
+  <input id="msgInput" placeholder="TYPE MESSAGE (A–Z)">
+  <button onclick="generateLink()">GENERATE LINK</button>
+</div>
+
+<div class="link-box" id="linkBox"></div>
+
+<div class="wall" id="wall"></div>
+
+<script>
+/* BUILD WALL */
+const rows = ["ABCDE","FGHIJ","KLMNO","PQRST","UVWXYZ"];
+const wall = document.getElementById("wall");
+const letters = {};
+
+rows.forEach(r => {
+  const rowDiv = document.createElement("div");
+  rowDiv.className = "row";
+  r.split("").forEach(ch => {
+    const d = document.createElement("div");
+    d.className = "letter";
+    d.textContent = ch;
+    rowDiv.appendChild(d);
+    letters[ch] = d;
+  });
+  wall.appendChild(rowDiv);
+});
+
+/* GENERATE FULL FILE LINK */
+function generateLink() {
+  let msg = document.getElementById("msgInput").value
+    .toUpperCase()
+    .replace(/[^A-Z]/g, "");
+
+  if (!msg) {
+    alert("ENTER LETTERS A–Z ONLY");
+    return;
+  }
+
+  // FULL absolute path + message
+  const fullLink = window.location.href.split("#")[0] + "#" + msg;
+
+  document.getElementById("linkBox").innerText =
+    "Copy & open this link:\n" + fullLink;
+}
+
+/* READ MESSAGE FROM LINK */
+const receivedMsg = window.location.hash.substring(1)
+  .toUpperCase()
+  .replace(/[^A-Z]/g, "");
+
+if (receivedMsg) {
+  blink(receivedMsg);
+}
+
+/* BLINK LOGIC */
+function blink(message) {
+  let i = 0;
+  const interval = setInterval(() => {
+    Object.values(letters).forEach(l => l.classList.remove("on"));
+    if (letters[message[i]]) letters[message[i]].classList.add("on");
+    i++;
+    if (i >= message.length) {
+      clearInterval(interval);
+    }
+  }, 900);
+}
+</script>
+
+</body>
+</html>
